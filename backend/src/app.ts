@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(session({
     secret: env.SECRET,
     resave: false, // Guardar la sesión ante cada solicitud
-    saveUninitialized: false, 
+    saveUninitialized: false,
     cookie: {
         maxAge: 60 * 60 * 1000 // 1 hora    
     },
