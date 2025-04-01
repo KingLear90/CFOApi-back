@@ -52,6 +52,26 @@ export const getCollaboratorById: RequestHandler = async (req, res, next) => {
     }
 }
 
+// Todos los colaboradores de un proyecto específico: 
+export const getCollaboratorsByProjectId: RequestHandler = async (req, res, next) => {
+    const projectId = req.params.id;
+    try {
+        if (!mongoose.isValidObjectId(projectId)) {
+            throw createHttpError(400, "Invalid project ID");
+        }
+
+        const projects = await projectModel.findById(projectId).populate({
+            path: 'collaborator_id', 
+            select: 'name'})
+        if (!projects) {
+            throw createHttpError(404, "No collaborators found for this project");
+        }
+        res.status(200).json(projects);
+    } catch(error) {
+        next(error);
+    }   
+}
+
 interface CreateCollaboratorBody {
     name: string;
     email: string;
@@ -172,21 +192,3 @@ export const deleteCollaborator: RequestHandler = async (req, res, next) => {
     }
 }
 
-export const getCollaboratorsByProjectId: RequestHandler = async (req, res, next) => {
-    const projectId = req.params.id;
-    try {
-        if (!mongoose.isValidObjectId(projectId)) {
-            throw createHttpError(400, "Invalid project ID");
-        }
-
-        const projects = await projectModel.findById(projectId).populate({
-            path: 'collaborator_id', 
-            select: 'name'})
-        if (!projects) {
-            throw createHttpError(404, "No collaborators found for this project");
-        }
-        res.status(200).json(projects);
-    } catch(error) {
-        next(error);
-    }   
-}
