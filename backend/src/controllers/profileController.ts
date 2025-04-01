@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import ProfileModel from "../models/profileModel";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
+import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from "../constants/http";
 
 export const getProfiles: RequestHandler = async (req, res, next)  => {
     try {
@@ -11,10 +12,10 @@ export const getProfiles: RequestHandler = async (req, res, next)  => {
         });
 
         if (profiles.length === 0) {
-            res.status(200).json({message: "No profiles yet"});
+            res.status(OK).json({message: "No profiles yet"});
         }
 
-        res.status(200).json({profiles});
+        res.status(OK).json({profiles});
     } catch(error) {
         next(error);
     }
@@ -25,14 +26,14 @@ export const getProfileById: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(profileId)) {
-            throw createHttpError(400, "Invalid profile ID");
+            throw createHttpError(BAD_REQUEST, "Invalid profile ID");
         }
 
         const profile = await ProfileModel.findById(profileId);
         if (!profile) {
-            throw createHttpError(404, "Profile not found");
+            throw createHttpError(NOT_FOUND, "Profile not found");
         }   
-        res.status(200).json({message: "Profile found:", profile});
+        res.status(OK).json({message: "Profile found:", profile});
 
     } catch(error) {
         next(error);
@@ -49,14 +50,14 @@ export const createProfile: RequestHandler<unknown, unknown, CreateProfileBody, 
 
     try { 
         if (!profile) {
-            throw createHttpError(400, "Profile is required");
+            throw createHttpError(BAD_REQUEST, "Profile is required");
         }
 
         const newProfile = await ProfileModel.create({
             profile
         })
         
-        res.status(201).json({message: 'Profile successfully created', newProfile});
+        res.status(CREATED).json({message: 'Profile successfully created', newProfile});
     } catch(error) {
         next(error);
     }
@@ -75,15 +76,15 @@ export const updateProfile: RequestHandler<UpdateProfileParams, unknown, UpdateP
     const { profile } = req.body;
 
     if (!mongoose.isValidObjectId(profileId)) {
-        throw createHttpError(400, "Invalid profile ID");
+        throw createHttpError(BAD_REQUEST, "Invalid profile ID");
     }
 
     try {
         const updatedProfile = await ProfileModel.findByIdAndUpdate(profileId, { profile }, {new: true});
         if (!updatedProfile) {
-            throw createHttpError(404, "Profile not found");
+            throw createHttpError(NOT_FOUND, "Profile not found");
         }
-        res.status(201).json({message: 'Profile successfully updated', updatedProfile});
+        res.status(CREATED).json({message: 'Profile successfully updated', updatedProfile});
     } catch(error) {
         next(error);
     }
@@ -93,13 +94,13 @@ export const deleteProfile: RequestHandler = async (req, res, next) => {
     const profileId = req.params.id;
     try {
         if (!mongoose.isValidObjectId(profileId)) {
-            throw createHttpError(400, "Invalid profile ID");
+            throw createHttpError(BAD_REQUEST, "Invalid profile ID");
         }
         const deletedProfile = await ProfileModel.findByIdAndDelete(profileId);
         if (!deletedProfile) {
-            throw createHttpError(404, "Profile not found");
+            throw createHttpError(NOT_FOUND, "Profile not found");
         }
-        res.status(200).json({message: 'Profile succesfully deleted', deletedProfile});
+        res.status(OK).json({message: 'Profile succesfully deleted', deletedProfile});
     } catch(error) {
         next(error);
     }   

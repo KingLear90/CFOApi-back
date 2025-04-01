@@ -2,16 +2,17 @@ import { RequestHandler } from "express";
 import DepartmentModel from "../models/departmentModel";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
+import { BAD_REQUEST, OK, NOT_FOUND, CREATED } from "../constants/http";
 
 export const getDepartments: RequestHandler = async (req, res, next)  => {
     try {
         const departments = await DepartmentModel.find();
 
         if (departments.length === 0) {
-            res.status(200).json({message: "No departments yet"});
+            res.status(OK).json({message: "No departments yet"});
         }
 
-        res.status(200).json({departments});
+        res.status(OK).json({departments});
     } catch(error) {
         next(error);
     }
@@ -22,14 +23,14 @@ export const getDepartmentById: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(deparmentId)) {
-            throw createHttpError(400, "Invalid department ID");
+            throw createHttpError(BAD_REQUEST, "Invalid department ID");
         }
 
         const department = await DepartmentModel.findById(deparmentId);
         if (!department) {
-            throw createHttpError(404, "Department not found");
+            throw createHttpError(NOT_FOUND, "Department not found");
         }   
-        res.status(200).json({message: "Department found:", department});
+        res.status(OK).json({message: "Department found:", department});
 
     } catch(error) {
         next(error);
@@ -46,14 +47,14 @@ export const createDepartment: RequestHandler<unknown, unknown, CreateDepartment
 
     try { 
         if (!department) {
-            throw createHttpError(400, "Department is required");
+            throw createHttpError(BAD_REQUEST, "Department is required");
         }
 
         const newDepartment = await DepartmentModel.create({
             department
         })
         
-        res.status(201).json({message: 'Department successfully created', newDepartment});
+        res.status(CREATED).json({message: 'Department successfully created', newDepartment});
     } catch(error) {
         next(error);
     }
@@ -72,15 +73,15 @@ export const updateDepartment: RequestHandler<UpdateDepartmentParams, unknown, U
     const { department } = req.body;
 
     if (!mongoose.isValidObjectId(departmentId)) {
-        throw createHttpError(400, "Invalid department ID");
+        throw createHttpError(BAD_REQUEST, "Invalid department ID");
     }
 
     try {
         const updatedDepartment = await DepartmentModel.findByIdAndUpdate(departmentId, { department }, {new: true});
         if (!updatedDepartment) {
-            throw createHttpError(404, "Department not found");
+            throw createHttpError(NOT_FOUND, "Department not found");
         }
-        res.status(201).json({message: 'Department successfully updated', updatedDepartment});
+        res.status(CREATED).json({message: 'Department successfully updated', updatedDepartment});
     } catch(error) {
         next(error);
     }
@@ -91,13 +92,13 @@ export const deleteDepartment: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(departmentId)) {
-            throw createHttpError(400, "Invalid department ID");
+            throw createHttpError(BAD_REQUEST, "Invalid department ID");
         }
         const deletedDepartment= await DepartmentModel.findByIdAndDelete(departmentId);
         if (!deletedDepartment) {
-            throw createHttpError(404, "Department not found");
+            throw createHttpError(NOT_FOUND, "Department not found");
         }
-        res.status(200).json({message: 'Department succesfully deleted', deletedDepartment});
+        res.status(OK).json({message: 'Department succesfully deleted', deletedDepartment});
     } catch(error) {
         next(error);
     }   

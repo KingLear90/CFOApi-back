@@ -2,6 +2,8 @@ import { RequestHandler } from "express";
 import ClientModel from "../models/clientModel";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
+import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from "../constants/http";
+
 
 export const getClients: RequestHandler = async (req, res, next) => {
     try {
@@ -10,9 +12,9 @@ export const getClients: RequestHandler = async (req, res, next) => {
             select: 'project'
         });
         if (clients.length === 0) {
-            res.status(200).json({message: "No clients yet"});
+            res.status(OK).json({message: "No clients yet"});
         }
-        res.status(200).json(clients);
+        res.status(OK).json(clients);
     } catch(error) {
         next(error);
     }
@@ -23,16 +25,16 @@ export const getClientById: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(clientId)) {
-            throw createHttpError(400, "Invalid client ID");
+            throw createHttpError(BAD_REQUEST, "Invalid client ID");
         }
 
         const client = await ClientModel.findById(clientId);
 
         if (!client) {
-            throw createHttpError(404, "Client not found");
+            throw createHttpError(NOT_FOUND, "Client not found");
         }
 
-        res.status(200).json({client});
+        res.status(OK).json({client});
     } catch(error) {
         next(error);
     }
@@ -50,7 +52,7 @@ export const createClient: RequestHandler<unknown, unknown, CreateClientBody, un
 
     try {
         if (!client) {
-            throw createHttpError(400, "Client is required");
+            throw createHttpError(BAD_REQUEST, "Client is required");
         }
 
         const newClient = await ClientModel.create({
@@ -66,7 +68,7 @@ export const createClient: RequestHandler<unknown, unknown, CreateClientBody, un
             );
         }
 
-        res.status(201).json({message: 'Client successfully created', newClient});  
+        res.status(CREATED).json({message: 'Client successfully created', newClient});  
     } catch(error) {
         next(error);    
     }
@@ -88,15 +90,15 @@ export const updateClient: RequestHandler<UpdateClientParams, unknown, UpdateCli
 
     try {
         if (!mongoose.isValidObjectId(clientId)) {
-            throw createHttpError(400, "Invalid client ID");
+            throw createHttpError(BAD_REQUEST, "Invalid client ID");
         }
         
         const updatedClient = await ClientModel.findByIdAndUpdate(clientId, { client, project_id, sector_id }, {new: true});
         if (!updatedClient) {
-            throw createHttpError(404, "Client not found");
+            throw createHttpError(NOT_FOUND, "Client not found");
         }
 
-        res.status(201).json({message: 'Updated information', updatedClient});
+        res.status(CREATED).json({message: 'Updated information', updatedClient});
     } catch(error) {
         next(error);
     }
@@ -107,14 +109,14 @@ export const deleteClient: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(clientId)) {
-            throw createHttpError(400, "Invalid client ID");
+            throw createHttpError(BAD_REQUEST, "Invalid client ID");
         }
         const deletedClient = await ClientModel.findByIdAndDelete(clientId);
         if (!deletedClient) {
-            throw createHttpError(404, "Client not found");
+            throw createHttpError(NOT_FOUND, "Client not found");
         }
 
-        res.status(200).json({message: 'Client successfully deleted', deleteClient});
+        res.status(OK).json({message: 'Client successfully deleted', deleteClient});
     } catch(error) {
         next(error);
     }

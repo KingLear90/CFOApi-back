@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import TribeModel from "../models/tribeModel";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
+import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from "../constants/http";
 
 export const getTribes: RequestHandler = async (req, res, next)  => {
     try {
@@ -11,10 +12,10 @@ export const getTribes: RequestHandler = async (req, res, next)  => {
         });
 
         if (tribes.length === 0) {
-            res.status(200).json({message: "No tribes yet"});
+            res.status(OK).json({message: "No tribes yet"});
         }
 
-        res.status(200).json({tribes});
+        res.status(OK).json({tribes});
     } catch(error) {
         next(error);
     }
@@ -25,14 +26,14 @@ export const getTribeById: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(tribeId)) {
-            throw createHttpError(400, "Invalid tribe ID");
+            throw createHttpError(BAD_REQUEST, "Invalid tribe ID");
         }
 
         const tribe = await TribeModel.findById(tribeId);
         if (!tribe) {
-            throw createHttpError(404, "Tribe not found");
+            throw createHttpError(NOT_FOUND, "Tribe not found");
         }   
-        res.status(200).json({message: "Tribe found:", tribe});
+        res.status(OK).json({message: "Tribe found:", tribe});
 
     } catch(error) {
         next(error);
@@ -50,7 +51,7 @@ export const createTribe: RequestHandler<unknown, unknown, CreateTribeBody, unkn
 
     try { 
         if (!tribe) {
-            throw createHttpError(400, "Tribe is required");
+            throw createHttpError(BAD_REQUEST, "Tribe is required");
         }
 
         const newTribe = await TribeModel.create({
@@ -58,7 +59,7 @@ export const createTribe: RequestHandler<unknown, unknown, CreateTribeBody, unkn
             collaborator_id
         })
         
-        res.status(201).json({message: 'Tribe successfully created', newTribe});
+        res.status(CREATED).json({message: 'Tribe successfully created', newTribe});
     } catch(error) {
         next(error);
     }
@@ -77,15 +78,15 @@ export const updateTribe: RequestHandler<UpdateTribeParams, unknown, UpdateTribe
     const { tribe } = req.body;
 
     if (!mongoose.isValidObjectId(tribeId)) {
-        throw createHttpError(400, "Invalid tribe ID");
+        throw createHttpError(BAD_REQUEST, "Invalid tribe ID");
     }
 
     try {
         const updatedTribe = await TribeModel.findByIdAndUpdate(tribeId, { tribe }, {new: true});
         if (!updatedTribe) {
-            throw createHttpError(404, "Tribe not found");
+            throw createHttpError(NOT_FOUND, "Tribe not found");
         }
-        res.status(201).json({message: 'Tribe successfully updated', updatedTribe});
+        res.status(CREATED).json({message: 'Tribe successfully updated', updatedTribe});
     } catch(error) {
         next(error);
     }
@@ -96,13 +97,13 @@ export const deleteTribe: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(tribeId)) {
-            throw createHttpError(400, "Invalid tribe ID");
+            throw createHttpError(BAD_REQUEST, "Invalid tribe ID");
         }
         const deletedTribe = await TribeModel.findByIdAndDelete(tribeId);
         if (!deletedTribe) {
-            throw createHttpError(404, "Tribe not found");
+            throw createHttpError(NOT_FOUND, "Tribe not found");
         }
-        res.status(200).json({message: 'Tribe succesfully deleted', deletedTribe});
+        res.status(OK).json({message: 'Tribe succesfully deleted', deletedTribe});
     } catch(error) {
         next(error);
     }   

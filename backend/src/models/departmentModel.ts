@@ -1,7 +1,7 @@
 import { InferSchemaType, model, Schema } from "mongoose";
 
 const departmentSchema = new Schema({
-    sector: { type: String, required: true, trim: true }
+    department: { type: String, required: true, trim: true }
 })
 
 type Department = InferSchemaType<typeof departmentSchema>;

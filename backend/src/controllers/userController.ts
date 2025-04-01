@@ -3,22 +3,23 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import UserModel from "../models/userModel";
 import bcrypt from 'bcrypt'
+import { BAD_REQUEST, CONFLICT, CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
     const authenticatedUser = req.session.userId;
 
     try {
         if (!authenticatedUser) {
-            throw createHttpError(401, "User not authenticated");
+            throw createHttpError(UNAUTHORIZED, "User not authenticated");
         }
         
         if(!mongoose.isValidObjectId(authenticatedUser)) {
-            throw createHttpError(400, "Invalid user ID");
+            throw createHttpError(BAD_REQUEST, "Invalid user ID");
         }
 
         const user = await UserModel.findById(authenticatedUser).select("+email")
 
-        res.status(200).json(user);
+        res.status(OK).json(user);
     } catch (error) {
         next(error);
     }
@@ -27,23 +28,23 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
 interface createUserBody {
     collab_name: string | undefined;
     email: string | undefined;
-    passwordRaw: string | undefined;
+    password: string | undefined;
 }
 
 export const createUser: RequestHandler<unknown, unknown, createUserBody, unknown> = async (req, res, next) => {
-    const { collab_name, email, passwordRaw } = req.body
+    const { collab_name, email, password } = req.body
 
     try {
-        if(!collab_name || !email || !passwordRaw) {
-            throw createHttpError(400, "Complete all fields");
+        if(!collab_name || !email || !password) {
+            throw createHttpError(BAD_REQUEST, "Complete all fields");
         }
 
         const existingEmail = await UserModel.findOne({email});
         if (existingEmail) {
-            throw createHttpError(409, "A user with this email already exists");
+            throw createHttpError(CONFLICT, "A user with this email already exists");
         }
 
-        const passwordHasshed = await bcrypt.hash(passwordRaw, 10);
+        const passwordHasshed = await bcrypt.hash(password, 10);
 
         const newUser = await UserModel.create({
             collab_name: collab_name,
@@ -53,7 +54,7 @@ export const createUser: RequestHandler<unknown, unknown, createUserBody, unknow
 
         req.session.userId = newUser._id;
 
-        res.status(201).json({message: 'User successfully created', newUser})
+        res.status(CREATED).json({message: 'User successfully created', newUser})
     } catch(error) {
         next(error);
     }
@@ -64,10 +65,10 @@ export const getUsers: RequestHandler = async (req, res, next)  => {
         const users = await UserModel.find();
 
         if (users.length === 0) {
-            res.status(200).json({message: "No users yet"});
+            res.status(OK).json({message: "No users yet"});
         }
 
-        res.status(200).json({users});
+        res.status(OK).json({users});
     } catch(error) {
         next(error);
     }
@@ -80,14 +81,14 @@ export const getUserById: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(userId)) {
-            throw createHttpError(400, "Invalid user ID");
+            throw createHttpError(BAD_REQUEST, "Invalid user ID");
         }
 
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw createHttpError(404, "User not found");
+            throw createHttpError(NOT_FOUND, "User not found");
         }   
-        res.status(200).json({message: "User found:", user});
+        res.status(OK).json({message: "User found:", user});
 
     } catch(error) {
         next(error);
@@ -100,24 +101,25 @@ interface UpdateUserParams {
 }
 
 interface UpdateUserBody {
+    collab_name: string;
     email: string;
     password: string;
 }
 
 export const updateUser: RequestHandler<UpdateUserParams, unknown, UpdateUserBody, unknown> = async (req, res, next) => {
     const userId = req.params.id;
-    const { email, password } = req.body;
+    const { collab_name, email, password } = req.body;
 
     if (!mongoose.isValidObjectId(userId)) {
-        throw createHttpError(400, "Invalid user ID");
+        throw createHttpError(BAD_REQUEST, "Invalid user ID");
     }
 
     try {
-        const updatedUser = await UserModel.findByIdAndUpdate(userId, { email, password }, {new: true});
+        const updatedUser = await UserModel.findByIdAndUpdate(userId, { collab_name, email, password }, {new: true});
         if (!updatedUser) {
-            throw createHttpError(404, "User not found");
+            throw createHttpError(NOT_FOUND, "User not found");
         }
-        res.status(201).json({message: 'User successfully updated', updatedUser});
+        res.status(CREATED).json({message: 'User successfully updated', updatedUser});
     } catch(error) {
         next(error);
     }
@@ -128,13 +130,13 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(userId)) {
-            throw createHttpError(400, "Invalid user ID");
+            throw createHttpError(BAD_REQUEST, "Invalid user ID");
         }
         const deletedUser = await UserModel.findByIdAndDelete(userId);
         if (!deletedUser) {
-            throw createHttpError(404, "User not found");
+            throw createHttpError(NOT_FOUND, "User not found");
         }
-        res.status(200).json({message: 'User succesfully deleted', deletedUser});
+        res.status(OK).json({message: 'User succesfully deleted', deletedUser});
     } catch(error) {
         next(error);
     }   
@@ -150,21 +152,21 @@ export const loginUser: RequestHandler<unknown, unknown, loginBody, unknown> = a
 
     try {
         if (!email || !password) {
-            throw createHttpError(400, "Complete all fields");
+            throw createHttpError(BAD_REQUEST, "Complete all fields");
         }   
 
         const user = await UserModel.findOne({email}).select('+email +password');
         if (!user) {
-            throw createHttpError(401, "Invalid credentials");
+            throw createHttpError(UNAUTHORIZED, "Invalid credentials");
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if(!passwordMatch) {
-            throw createHttpError(401, "Invalid credentials");
+            throw createHttpError(UNAUTHORIZED, "Invalid credentials");
         }
 
         req.session.userId = user._id;
-        res.status(200).json({message: 'User successfully logged in', user});
+        res.status(OK).json({message: 'User successfully logged in', user});
     } catch (error) {
         next(error);
     }
@@ -175,7 +177,7 @@ export const logoutUser: RequestHandler = (req, res, next) => {
         if (error) {
             next(error);
         } else {
-            res.sendStatus(200);
+            res.sendStatus(OK);
         }
     })
 }

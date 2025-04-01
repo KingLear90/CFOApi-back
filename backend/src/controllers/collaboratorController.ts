@@ -6,6 +6,7 @@ import ProjectModel from "../models/projectModel";
 import ProfileModel from "../models/profileModel";
 import TribeModel from "../models/tribeModel";
 import projectModel from "../models/projectModel";
+import { BAD_REQUEST, NOT_FOUND, OK, CREATED } from "../constants/http";
 
 export const getCollaborators: RequestHandler = async (req, res, next) => {
     try {
@@ -24,9 +25,9 @@ export const getCollaborators: RequestHandler = async (req, res, next) => {
         });
         
         if (collaborators.length === 0) {
-            res.status(200).json({message: "No collaborators yet"});
+            res.status(OK).json({message: "No collaborators yet"});
         }
-        res.status(200).json(collaborators);
+        res.status(OK).json(collaborators);
     } catch(error) {
         next(error);
     }
@@ -37,16 +38,16 @@ export const getCollaboratorById: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(collaboratorId)) {
-            throw createHttpError(400, "Invalid collaborator ID");
+            throw createHttpError(BAD_REQUEST, "Invalid collaborator ID");
         }
 
         const collaborator = await CollaboratorModel.findById(collaboratorId);
 
         if (!collaborator) {
-            throw createHttpError(404, "Collaborator not found");
+            throw createHttpError(NOT_FOUND, "Collaborator not found");
         }
 
-        res.status(200).json({collaborator});
+        res.status(OK).json({collaborator});
     } catch(error) {
         next(error);
     }
@@ -57,16 +58,17 @@ export const getCollaboratorsByProjectId: RequestHandler = async (req, res, next
     const projectId = req.params.id;
     try {
         if (!mongoose.isValidObjectId(projectId)) {
-            throw createHttpError(400, "Invalid project ID");
+            throw createHttpError(BAD_REQUEST, "Invalid project ID");
         }
 
         const projects = await projectModel.findById(projectId).populate({
             path: 'collaborator_id', 
             select: 'name'})
+
         if (!projects) {
-            throw createHttpError(404, "No collaborators found for this project");
+            throw createHttpError(NOT_FOUND, "No collaborators found for this project");
         }
-        res.status(200).json(projects);
+        res.status(OK).json(projects);
     } catch(error) {
         next(error);
     }   
@@ -85,10 +87,10 @@ export const createCollaborator: RequestHandler<unknown, unknown, CreateCollabor
 
     try {
         if (!name) {
-            throw createHttpError(400, "Collaborator must have a name");
+            throw createHttpError(BAD_REQUEST, "Collaborator must have a name");
         }
         if (!email) {
-            throw createHttpError(400, "Collaborator must have an email");
+            throw createHttpError(BAD_REQUEST, "Collaborator must have an email");
         }
 
         const newCollaborator = await CollaboratorModel.create({
@@ -102,7 +104,7 @@ export const createCollaborator: RequestHandler<unknown, unknown, CreateCollabor
         if (profile_id) {
             const profile = await ProfileModel.findById(profile_id);
             if (!profile) {
-                throw createHttpError(404, "Profile not found");
+                throw createHttpError(NOT_FOUND, "Profile not found");
             }
             profile.collaborator_id.push(newCollaborator._id);
             await profile.save();
@@ -111,7 +113,7 @@ export const createCollaborator: RequestHandler<unknown, unknown, CreateCollabor
         if (tribe_id) {
             const tribe = await TribeModel.findById(tribe_id);
             if (!tribe) {
-                throw createHttpError(404, "Tribe not found");
+                throw createHttpError(NOT_FOUND, "Tribe not found");
             }
             tribe.collaborator_id.push(newCollaborator._id);
             await tribe.save();
@@ -123,7 +125,7 @@ export const createCollaborator: RequestHandler<unknown, unknown, CreateCollabor
                 try {
                     const project = await ProjectModel.findById(id);
                     if (!project) {
-                        throw createHttpError(404, "Project not found");
+                        throw createHttpError(NOT_FOUND, "Project not found");
                     }
 
                     project.collaborator_id.push(newCollaborator._id);
@@ -139,7 +141,7 @@ export const createCollaborator: RequestHandler<unknown, unknown, CreateCollabor
             await Promise.all(projectsPromises);
         }
 
-        res.status(201).json({ message: "Collaborator successfully created", newCollaborator });
+        res.status(CREATED).json({ message: "Collaborator successfully created", newCollaborator });
     } catch (error) {
         next(error);
     }
@@ -160,15 +162,15 @@ export const updateCollaborator: RequestHandler<UpdateCollaboratorParams, unknow
 
     try {
         if (!mongoose.isValidObjectId(collaboratorId)) {
-            throw createHttpError(400, "Invalid collaborator ID");
+            throw createHttpError(BAD_REQUEST, "Invalid collaborator ID");
         }
         
         const updatedCollaborator = await CollaboratorModel.findByIdAndUpdate(collaboratorId, req.body, {new: true});
         if (!updatedCollaborator) {
-            throw createHttpError(404, "Collaborator not found");
+            throw createHttpError(NOT_FOUND, "Collaborator not found");
         }
 
-        res.status(201).json({message: 'Updated information', updatedCollaborator});
+        res.status(CREATED).json({message: 'Updated information', updatedCollaborator});
     } catch(error) {
         next(error);
     }
@@ -179,14 +181,14 @@ export const deleteCollaborator: RequestHandler = async (req, res, next) => {
 
     try {
         if (!mongoose.isValidObjectId(collaboratorId)) {
-            throw createHttpError(400, "Invalid collaborator ID");
+            throw createHttpError(BAD_REQUEST, "Invalid collaborator ID");
         }
         const deletedCollaborator = await CollaboratorModel.findByIdAndDelete(collaboratorId);
         if (!deletedCollaborator) {
-            throw createHttpError(404, "Collaborator not found");
+            throw createHttpError(NOT_FOUND, "Collaborator not found");
         }
 
-        res.status(200).json({message: 'Collaborator successfully deleted', deletedCollaborator});
+        res.status(OK).json({message: 'Collaborator successfully deleted', deletedCollaborator});
     } catch(error) {
         next(error);
     }
