@@ -13,6 +13,7 @@ mongoose.connect(env.MONGODB_URI)
     })
     .catch((err) => {
         console.log(err);
+        process.exit(1);
     })
 
 
