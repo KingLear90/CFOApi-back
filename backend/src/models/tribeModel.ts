@@ -8,7 +8,8 @@ const tribeSchema = new Schema({
     },
     collaborator_id: {
         type: [Schema.Types.ObjectId],
-        ref: 'Collaborator'
+        ref: 'Collaborator',
+        default: null
     }
 })
 
