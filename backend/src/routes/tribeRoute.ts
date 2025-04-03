@@ -1,5 +1,5 @@
 import express from 'express';
-import * as TribeController from '../controllers/tribeController';
+import * as TribeController from '../controllers/tribe.controller';
 
 const router = express.Router();
 
