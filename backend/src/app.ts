@@ -25,7 +25,7 @@ app.use(cors(
 app.use(express.json());
 
 app.use(session({
-    secret: env.SECRET,
+    secret: env.JWT_SECRET,
     resave: false, // Guardar la sesión ante cada solicitud
     saveUninitialized: false,
     cookie: {
