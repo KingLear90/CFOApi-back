@@ -1,10 +1,15 @@
 import { InferSchemaType, model, Schema } from "mongoose"; 
 
 const profileSchema = new Schema({
-    profile: { type: String, required: true },
+    profile: { 
+        type: String, 
+        required: true,
+        unique: true, 
+    },
     collaborator_id: {
         type: [Schema.Types.ObjectId],
-        ref: 'Collaborator'
+        ref: 'Collaborator',
+        default: null
     }
 });
 

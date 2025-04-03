@@ -8,11 +8,13 @@ const projectSchema = new Schema({
     },
     tribe_id: {
         type: Schema.Types.ObjectId,
-        ref: 'Tribe'
+        ref: 'Tribe',
+        default: null
     },
     collaborator_id: {
         type: [Schema.Types.ObjectId],
-        ref: 'Collaborator'
+        ref: 'Collaborator',
+        default: null
     }
 })
 

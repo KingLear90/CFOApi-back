@@ -12,6 +12,7 @@ const clientSchema = new Schema({
     project_id: {
         type: [Schema.Types.ObjectId],
         ref: 'Project',
+        default: null
     },
 })
 
