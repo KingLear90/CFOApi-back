@@ -6,11 +6,11 @@ const tribeSchema = new Schema({
         required: true,
         trim: true
     },
-    collaborator_id: {
-        type: [Schema.Types.ObjectId],
+    collaborator_id: [{
+        type: Schema.Types.ObjectId,
         ref: 'Collaborator',
         default: null
-    }
+    }]
 })
 
 type Tribe = InferSchemaType<typeof tribeSchema>;

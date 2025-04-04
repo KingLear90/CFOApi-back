@@ -9,11 +9,10 @@ const clientSchema = new Schema({
         minlength: 2,
         trim: true,
     },
-    project_id: {
-        type: [Schema.Types.ObjectId],
+    project_id: [{
+        type: Schema.Types.ObjectId || null,
         ref: 'Project',
-        default: null
-    },
+        default: null}],
 })
 
 type Client = InferSchemaType<typeof clientSchema>;

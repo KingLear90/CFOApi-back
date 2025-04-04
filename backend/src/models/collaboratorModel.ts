@@ -16,16 +16,16 @@ const collaboratorSchema = new Schema({
         ref: 'Profile',
         default: null
     },
-    tribe_id: { 
-        type: [Schema.Types.ObjectId],
+    tribe_id: [{ 
+        type: Schema.Types.ObjectId,
         ref: 'Tribe',
         default: null
-    },
-    project_id: {
-        type: [Schema.Types.ObjectId],
+    }],
+    project_id: [{
+        type: Schema.Types.ObjectId,
         ref: 'Project',
         default: null
-    }
+    }]
 }, { timestamps: true });
 
 type Collaborator = InferSchemaType<typeof collaboratorSchema>; // crea un tipo Collaborator a partir del schema.

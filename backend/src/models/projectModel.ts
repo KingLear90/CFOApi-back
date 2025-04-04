@@ -11,11 +11,11 @@ const projectSchema = new Schema({
         ref: 'Tribe',
         default: null
     },
-    collaborator_id: {
-        type: [Schema.Types.ObjectId],
+    collaborator_id: [{
+        type: Schema.Types.ObjectId,
         ref: 'Collaborator',
         default: null
-    }
+    }]
 })
 
 type Project = InferSchemaType<typeof projectSchema>;
