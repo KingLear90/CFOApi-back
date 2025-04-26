@@ -10,7 +10,7 @@ import userRoutes from './routes/userRoute';
 import createHttpError, { isHttpError } from 'http-errors';
 import cors from 'cors';
 import session from 'express-session';
-import env from './util/validateEnv'
+import env from './utils/validateEnv'
 import MongoStore from 'connect-mongo';
 
 const app = express();
