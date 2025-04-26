@@ -146,19 +146,29 @@ interface UpdateCollaboratorParams {
 
 interface UpdateCollaboratorBody {
     name?: string;
-    profile?: string;
-    tribu?: string;
+    email?: string;
+    profile_id?: string;
+    tribe_id?: string;
+    project_id?: string;
 }
 
 export const updateCollaborator: RequestHandler<UpdateCollaboratorParams, unknown, UpdateCollaboratorBody, unknown> = async (req, res, next) => {
     const collaboratorId = req.params.id;
+    const { name, email, profile_id, tribe_id, project_id } = req.body;
 
     try {
         if (!mongoose.isValidObjectId(collaboratorId)) {
             throw createHttpError(BAD_REQUEST, "Invalid collaborator ID");
         }
         
-        const updatedCollaborator = await CollaboratorModel.findByIdAndUpdate(collaboratorId, req.body, {new: true});
+        const updatedCollaborator = await CollaboratorModel.findByIdAndUpdate(collaboratorId, {
+            name, 
+            email, 
+            profile_id,
+            tribe_id,
+            project_id
+        }, {new: true});
+
         if (!updatedCollaborator) {
             throw createHttpError(NOT_FOUND, "Collaborator not found");
         }
