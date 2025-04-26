@@ -18,6 +18,10 @@ const userSchema = new Schema({
         select: false,
         required: true,
         trim: true
+    },
+    isAdmin: {
+        type: Boolean,
+        required: true
     }
 })
 
