@@ -4,7 +4,7 @@ import createHttpError from "http-errors";
 import UserModel from "../models/userModel";
 import bcrypt from 'bcrypt'
 import { BAD_REQUEST, CONFLICT, CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
-import { generateJWT } from "../util/jwt";
+import { generateJWT } from "../utils/jwt";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
     const authenticatedUser = req.session.userId;
@@ -30,10 +30,11 @@ interface createUserBody {
     collab_name: string | undefined;
     email: string | undefined;
     password: string | undefined;
+    isAdmin: boolean | undefined;
 }
 
 export const createUser: RequestHandler<unknown, unknown, createUserBody, unknown> = async (req, res, next) => {
-    const { collab_name, email, password } = req.body
+    const { collab_name, email, password, isAdmin } = req.body
 
     try {
         if(!collab_name || !email || !password) {
@@ -48,9 +49,10 @@ export const createUser: RequestHandler<unknown, unknown, createUserBody, unknow
         const passwordHasshed = await bcrypt.hash(password, 10);
 
         const newUser = await UserModel.create({
-            collab_name: collab_name,
-            email: email,
-            password: passwordHasshed
+            collab_name,
+            email,
+            password: passwordHasshed,
+            isAdmin
         })
 
         req.session.userId = newUser._id;
@@ -77,8 +79,6 @@ export const getUsers: RequestHandler = async (req, res, next)  => {
 
 export const getUserById: RequestHandler = async (req, res, next) => {
     const userId = req.params.id;
-    console.log("Received userId:", userId, "Type:", typeof userId);
-    console.log("Is valid ObjectId:", mongoose.isValidObjectId(userId)); 
 
     try {
         if (!mongoose.isValidObjectId(userId)) {
