@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express, {Request, Response, NextFunction} from 'express';
+import express from 'express';
 import clientRoutes from './routes/clientRoute';
 import collaboratorRoutes from './routes/collaboratorRoute';
 import profileRoutes from './routes/profileRoute';
@@ -7,11 +7,12 @@ import projectRoutes from './routes/projectRoute';
 import departmentRoutes from './routes/departmentRoute';
 import tribeRoutes from './routes/tribeRoute';
 import userRoutes from './routes/userRoute';
-import createHttpError, { isHttpError } from 'http-errors';
+import createHttpError from 'http-errors';
 import cors from 'cors';
 import session from 'express-session';
-import env from './utils/validateEnv'
+import env from './utils/validateEnv';
 import MongoStore from 'connect-mongo';
+import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
 
@@ -51,17 +52,7 @@ app.use((req, res, next) => {
     next(createHttpError(404, 'Endpoint not found'));
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {      //Middleware que maneja errores.
-    console.error(error);
-    let errorMessage = 'An unknown error occurred';
-    let statusCode = 500;
-    if (isHttpError(error)) {
-        statusCode = error.status;
-        errorMessage = error.message;
-    };
-    console.log(`${statusCode}: ${errorMessage}`)
-    res.status(statusCode).json({ message: errorMessage }); 
-});
+// Middleware que maneja errores.
+app.use(errorHandler);
 
 export default app; 
