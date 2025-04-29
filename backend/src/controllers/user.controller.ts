@@ -22,18 +22,18 @@ interface createUserBody {
 }
 
 export const createUser: RequestHandler<unknown, unknown, createUserBody, unknown> = async (req, res, next) => {
-    const { collab_name, email, password, isAdmin } = req.body
+    const { collab_name, email, password, isAdmin } = req.body;
 
     try {
-        if(!collab_name || !email || !password) {
-            throw createHttpError(BAD_REQUEST, "Complete all fields");
-        }
-
         const existingEmail = await UserModel.findOne({email});
         if (existingEmail) {
             throw createHttpError(CONFLICT, "A user with this email already exists");
         }
 
+        if (!password) {
+            throw createHttpError(BAD_REQUEST, "Password is required");
+        }
+        
         const passwordHasshed = await bcrypt.hash(password, 10);
 
         const newUser = await UserModel.create({
