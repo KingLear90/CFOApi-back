@@ -7,20 +7,8 @@ import { BAD_REQUEST, CONFLICT, CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../
 import { generateJWT } from "../utils/jwt";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
-    const authenticatedUser = req.session.userId;
-
     try {
-        if (!authenticatedUser) {
-            throw createHttpError(UNAUTHORIZED, "User not authenticated");
-        }
-        
-        if(!mongoose.isValidObjectId(authenticatedUser)) {
-            throw createHttpError(BAD_REQUEST, "Invalid user ID");
-        }
-
-        const user = await UserModel.findById(authenticatedUser).select("+email")
-
-        res.status(OK).json(user);
+      res.json(req.user);  
     } catch (error) {
         next(error);
     }
@@ -54,8 +42,6 @@ export const createUser: RequestHandler<unknown, unknown, createUserBody, unknow
             password: passwordHasshed,
             isAdmin
         })
-
-        req.session.userId = newUser._id;
 
         res.status(CREATED).json({message: 'User successfully created', newUser})
     } catch(error) {
