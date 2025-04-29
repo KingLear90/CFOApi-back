@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import UserModel from "../models/userModel";
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import { BAD_REQUEST, CONFLICT, CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
 import { generateJWT } from "../utils/jwt";
 
